@@ -1,3 +1,7 @@
 .ipynb_checkpoints
 data/
 models/
+artifacts/
+mlruns/
+output/
+mlflow.db
