@@ -5,3 +5,4 @@ artifacts/
 mlruns/
 output/
 mlflow.db
+.vscode/
