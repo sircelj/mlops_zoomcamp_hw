@@ -1,3 +1,5 @@
+import os
+from datetime import datetime
 import pandas as pd
 
 from sklearn.feature_extraction import DictVectorizer
@@ -60,10 +62,33 @@ def run_model(df, categorical, dv, lr):
     print(f"The MSE of validation is: {mse}")
     return
 
-@flow(task_runner=SequentialTaskRunner())
-def main(train_path: str = './../data/fhv_tripdata_2021-01.parquet', 
-           val_path: str = './../data/fhv_tripdata_2021-02.parquet'):
 
+@task
+def get_paths(date=None):
+    logger = get_run_logger()
+
+    root_dir = "./../data/"
+
+    if date is None:
+        date = datetime.now()
+
+    month = date.month
+
+    train_month = month - 2
+    val_month = month - 1
+
+    train_path = os.path.join(root_dir, f"fhv_tripdata_2021-{train_month:02d}.parquet")
+    val_path = os.path.join(root_dir, f"fhv_tripdata_2021-{val_month:02d}.parquet")
+
+    logger.info(f"{train_path=}")
+    logger.info(f"{val_path=}")
+
+    return train_path, val_path
+
+
+@flow  # (task_runner=SequentialTaskRunner())
+def main(date : datetime=None):
+    train_path, val_path = get_paths(date).result()
     categorical = ['PUlocationID', 'DOlocationID']
 
     df_train = read_data(train_path)
@@ -76,4 +101,4 @@ def main(train_path: str = './../data/fhv_tripdata_2021-01.parquet',
     lr, dv = train_model(df_train_processed, categorical).result()
     run_model(df_val_processed, categorical, dv, lr)
 
-main()
+main(date=datetime.fromisoformat("2021-08-15"))
